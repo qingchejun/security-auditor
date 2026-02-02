@@ -16,6 +16,7 @@
 - 扫描仅限代码/配置文件，显著提升性能
 - 增强注释过滤（# / // / /* */）降低误报
 - 关键字检测加入词边界，减少误报
+- 优化白名单：新增 @openclaw、undici、zod、tslib、zx、execa、playwright
 - 集成 GitHub Actions CI / MIT 许可证 / 贡献指南 / 安装脚本
 
 ## [2.0.0] - 2026-02-02

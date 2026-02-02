@@ -21,7 +21,8 @@
       "@supabase",
       "@prisma",
       "@nestjs",
-      "@tensorflow"
+      "@tensorflow",
+      "@openclaw"
     ],
 
     "trustedPackages": {
@@ -35,14 +36,17 @@
         "axios",
         "node-fetch",
         "got",
-        "superagent"
+        "superagent",
+        "undici"
       ],
       "utilities": [
         "lodash",
         "underscore",
         "ramda",
         "uuid",
-        "nanoid"
+        "nanoid",
+        "zod",
+        "tslib"
       ],
       "dateTime": [
         "moment",
@@ -57,7 +61,9 @@
         "commander",
         "yargs",
         "dotenv",
-        "config"
+        "config",
+        "zx",
+        "execa"
       ],
       "logging": [
         "winston",
@@ -84,7 +90,8 @@
         "vitest",
         "chai",
         "sinon",
-        "ava"
+        "ava",
+        "playwright"
       ]
     },
 
