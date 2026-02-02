@@ -1,0 +1,136 @@
+{
+  "version": "1.0.0",
+  "lastUpdated": "2026-02-02",
+  "description": "可信来源白名单 - 这些来源的代码可以跳过或轻度审计",
+
+  "npm": {
+    "trustedScopes": [
+      "@types",
+      "@babel",
+      "@vue",
+      "@nuxt",
+      "@angular",
+      "@react",
+      "@microsoft",
+      "@google-cloud",
+      "@aws-sdk",
+      "@anthropic",
+      "@openai",
+      "@stripe",
+      "@vercel",
+      "@supabase",
+      "@prisma",
+      "@nestjs",
+      "@tensorflow"
+    ],
+
+    "trustedPackages": {
+      "webFrameworks": [
+        "express",
+        "koa",
+        "fastify",
+        "hapi"
+      ],
+      "httpClients": [
+        "axios",
+        "node-fetch",
+        "got",
+        "superagent"
+      ],
+      "utilities": [
+        "lodash",
+        "underscore",
+        "ramda",
+        "uuid",
+        "nanoid"
+      ],
+      "dateTime": [
+        "moment",
+        "dayjs",
+        "date-fns",
+        "luxon"
+      ],
+      "cliTools": [
+        "chalk",
+        "ora",
+        "inquirer",
+        "commander",
+        "yargs",
+        "dotenv",
+        "config"
+      ],
+      "logging": [
+        "winston",
+        "pino",
+        "bunyan",
+        "debug"
+      ],
+      "buildTools": [
+        "webpack",
+        "vite",
+        "rollup",
+        "esbuild",
+        "parcel"
+      ],
+      "codeQuality": [
+        "eslint",
+        "prettier",
+        "typescript",
+        "ts-node"
+      ],
+      "testing": [
+        "jest",
+        "mocha",
+        "vitest",
+        "chai",
+        "sinon",
+        "ava"
+      ]
+    },
+
+    "criteria": {
+      "weeklyDownloads": 500000,
+      "packageAge": 730,
+      "lastUpdated": 180,
+      "githubStars": 5000
+    }
+  },
+
+  "openclaw": {
+    "officialDomains": [
+      "openclaw.ai",
+      "github.com/anthropics/openclaw",
+      "github.com/openclaw"
+    ],
+
+    "verifiedAuthors": [
+      "anthropics",
+      "openclaw-team"
+    ]
+  },
+
+  "plugins": {
+    "officialSources": [
+      "https://openclaw.ai/plugins/",
+      "https://github.com/anthropics/openclaw-plugins"
+    ]
+  },
+
+  "blacklist": {
+    "npm": [
+      "event-stream@3.3.6",
+      "flatmap-stream@0.1.1",
+      "eslint-scope@3.7.2"
+    ],
+    "domains": [
+      "evil.com",
+      "malicious.io"
+    ]
+  },
+
+  "notes": {
+    "updateSchedule": "每季度更新一次（3个月）",
+    "verificationMethod": "基于NPM Registry数据和社区反馈",
+    "securityIncidents": "发现安全事件时立即更新黑名单"
+  }
+}

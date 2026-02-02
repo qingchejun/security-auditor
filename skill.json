@@ -1,0 +1,38 @@
+{
+  "name": "security-auditor",
+  "description": "OpenClaw 安全审计工具 - 审计任何代码/脚本/项目的安全性，基于来源信任级别智能检测",
+  "version": "2.0.0",
+  "trigger": "security",
+  "commands": [
+    {
+      "name": "audit",
+      "description": "完整安全审计（不检查来源）",
+      "script": "audit.sh"
+    },
+    {
+      "name": "audit-smart",
+      "description": "智能审计（先检查来源，再决定审计策略）",
+      "script": "audit-with-source-check.sh"
+    },
+    {
+      "name": "check-source",
+      "description": "仅检查来源信任级别",
+      "script": "check-source.sh"
+    },
+    {
+      "name": "log",
+      "description": "查看审计日志摘要",
+      "script": "view-audit-log.sh"
+    },
+    {
+      "name": "log-list",
+      "description": "查看审计日志详细列表",
+      "script": "view-audit-log.sh list"
+    },
+    {
+      "name": "log-stats",
+      "description": "查看审计统计图表",
+      "script": "view-audit-log.sh stats"
+    }
+  ]
+}
