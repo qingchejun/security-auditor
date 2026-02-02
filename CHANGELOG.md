@@ -8,10 +8,15 @@
 ## [Unreleased]
 
 ### Added
-- 集成 GitHub Actions CI
-- 添加 MIT 许可证
-- 添加贡献指南
-- 添加安装脚本
+- 新增危险管道执行检测（curl|bash / wget|sh）
+- 新增一行执行检测（node -e / python -c / bash -c）
+- 新增 package.json 安装脚本风险检测
+
+### Changed
+- 扫描仅限代码/配置文件，显著提升性能
+- 增强注释过滤（# / // / /* */）降低误报
+- 关键字检测加入词边界，减少误报
+- 集成 GitHub Actions CI / MIT 许可证 / 贡献指南 / 安装脚本
 
 ## [2.0.0] - 2026-02-02
 
