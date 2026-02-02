@@ -11,6 +11,10 @@
 - 新增危险管道执行检测（curl|bash / wget|sh）
 - 新增一行执行检测（node -e / python -c / bash -c）
 - 新增 package.json 安装脚本风险检测
+- 增加 audit-smart.sh 兼容包装，避免命令不可用时中断
+
+### Changed
+- 当无可扫描源码文件时，快速返回低风险，避免审计脚本卡住
 
 ### Changed
 - 扫描仅限代码/配置文件，显著提升性能

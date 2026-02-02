@@ -15,7 +15,7 @@
 ## 使用流程
 
 1. **识别安装意图**：当用户想安装或使用第三方代码时
-2. **自动审计**：运行 `openclaw security audit-smart <path>` 或 `./audit.sh <path>`
+2. **自动审计**：优先 `openclaw security audit-smart <path>`；若命令不可用，改用 `./audit-with-source-check.sh <path>`
 3. **评估结果**：
    - 🟢 LOW（0）：直接安装
    - 🟡 MEDIUM（3）：自动安装 + 记录日志

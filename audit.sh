@@ -13,7 +13,10 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # 扫描范围（仅代码/配置文件）
-SCAN_FILES=$(find "$SKILL_PATH" -type f \( \
+SCAN_FILES=()
+while IFS= read -r f; do
+  SCAN_FILES+=("$f")
+done < <(find "$SKILL_PATH" -type f \( \
   -name "*.sh" -o -name "*.bash" -o -name "*.zsh" -o \
   -name "*.js" -o -name "*.ts" -o -name "*.py" -o \
   -name "*.json" -o -name "*.yaml" -o -name "*.yml" \
@@ -27,12 +30,19 @@ SCAN_FILES=$(find "$SKILL_PATH" -type f \( \
   ! -path "*/.next/*" \
   ! -path "*/.cache/*" 2>/dev/null || true)
 
-if [ -z "$SCAN_FILES" ]; then
+NO_SCAN=0
+if [ ${#SCAN_FILES[@]} -eq 0 ]; then
   echo -e "${YELLOW}⚠️  未找到可扫描文件（仅扫描代码/配置文件）${NC}"
+  NO_SCAN=1
 fi
 
 echo "🔍 开始审核 skill: $SKILL_PATH"
 echo ""
+
+if [ "$NO_SCAN" -eq 1 ]; then
+  echo -e "${GREEN}✅ 无可扫描源码文件，判定为低风险${NC}"
+  exit 0
+fi
 
 # 检查项目计数和详细信息
 WARNINGS=0
@@ -43,7 +53,7 @@ declare -a RISK_LEVELS=()
 # 1. 检查危险的文件系统操作
 echo "📁 检查危险的文件系统操作..."
 # 排除文档、注释、grep模式本身、变量赋值中的字符串
-DANGEROUS_FS=$(grep -hE "rm -rf|rm -fr|> /dev/|chmod 777|chmod -R 777|mkfs|dd if=|fdisk|parted|format" $SCAN_FILES 2>/dev/null | \
+DANGEROUS_FS=$(grep -hE "rm -rf|rm -fr|> /dev/|chmod 777|chmod -R 777|mkfs|dd if=|fdisk|parted|format" ${SCAN_FILES[@]} 2>/dev/null | \
     grep -vE "^[[:space:]]*(#|//|/\*|\*)" | \
     grep -v "grep.*-rE" | \
     grep -v "WARNING_DETAILS" | \
@@ -64,7 +74,7 @@ echo ""
 echo "🌐 检查网络请求..."
 HTTP_FOUND=false
 HTTPS_FOUND=false
-EXTERNAL_URLS=$(grep -hE "https?://" $SCAN_FILES 2>/dev/null | grep -oE "https?://[^\"' ]+" | sort -u || true)
+EXTERNAL_URLS=$(grep -hE "https?://" ${SCAN_FILES[@]} 2>/dev/null | grep -oE "https?://[^\"' ]+" | sort -u || true)
 
 if [ -n "$EXTERNAL_URLS" ]; then
     # 检查是否有非 HTTPS 请求
@@ -107,8 +117,8 @@ echo ""
 
 # 3. 检查命令执行
 echo "⚡ 检查命令执行..."
-DANGEROUS_EXEC=$(grep -hE "\beval\b|\bexec\b|system\(" $SCAN_FILES 2>/dev/null || true)
-SAFE_EXEC=$(grep -hE "spawn|child_process|execFile" $SCAN_FILES 2>/dev/null || true)
+DANGEROUS_EXEC=$(grep -hE "\beval\b|\bexec\b|system\(" ${SCAN_FILES[@]} 2>/dev/null || true)
+SAFE_EXEC=$(grep -hE "spawn|child_process|execFile" ${SCAN_FILES[@]} 2>/dev/null || true)
 
 if [ -n "$DANGEROUS_EXEC" ]; then
     echo -e "${RED}⚠️  发现危险的命令执行:${NC}"
@@ -128,7 +138,7 @@ echo ""
 
 # 4. 检查敏感数据访问
 echo "🔐 检查敏感数据访问..."
-SENSITIVE=$(grep -hE "\b(password|token|secret|api_key|apiKey|credentials|private_key)\b" $SCAN_FILES 2>/dev/null | head -5 || true)
+SENSITIVE=$(grep -hE "\b(password|token|secret|api_key|apiKey|credentials|private_key)\b" ${SCAN_FILES[@]} 2>/dev/null | head -5 || true)
 if [ -n "$SENSITIVE" ]; then
     echo -e "${YELLOW}⚠️  发现敏感数据关键词:${NC}"
     echo "$SENSITIVE"
@@ -151,30 +161,30 @@ echo ""
 # 5. 检查敏感文件泄露（凭证、密钥等）
 echo "🔒 检查敏感文件泄露风险..."
 # 排除文档和注释
-SENSITIVE_FILES_LEAK=$(grep -hE "curl.*\.(env|npmrc|ssh|aws|credentials|gitconfig|git-credentials|netrc|gnupg|docker|kube)|wget.*\.(env|npmrc|ssh|aws|credentials)|tar.*\.(ssh|aws|openclaw|gnupg)|zip.*\.(ssh|aws|openclaw)" $SCAN_FILES 2>/dev/null | \
+SENSITIVE_FILES_LEAK=$(grep -hE "curl.*\.(env|npmrc|ssh|aws|credentials|gitconfig|git-credentials|netrc|gnupg|docker|kube)|wget.*\.(env|npmrc|ssh|aws|credentials)|tar.*\.(ssh|aws|openclaw|gnupg)|zip.*\.(ssh|aws|openclaw)" ${SCAN_FILES[@]} 2>/dev/null | \
     grep -vE "^[[:space:]]*(#|//|/\*|\*)" | \
     grep -v "grep.*-rE" || true)
 
 # 检查OpenClaw目录访问
-OPENCLAW_ACCESS=$(grep -hE "\.openclaw|openclaw\.json|gateway.*auth|exec-approvals" $SCAN_FILES 2>/dev/null | \
+OPENCLAW_ACCESS=$(grep -hE "\.openclaw|openclaw\.json|gateway.*auth|exec-approvals" ${SCAN_FILES[@]} 2>/dev/null | \
     grep -vE "^[[:space:]]*(#|//|/\*|\*)" | \
     grep -v "grep.*-rE" | \
     grep -v "example" | \
     grep -v "comment" || true)
 
 # 检查浏览器数据访问
-BROWSER_DATA=$(grep -hE "Library/Application Support/(Google Chrome|Safari|Firefox)|Cookies|Login Data|Keychains" $SCAN_FILES 2>/dev/null | \
+BROWSER_DATA=$(grep -hE "Library/Application Support/(Google Chrome|Safari|Firefox)|Cookies|Login Data|Keychains" ${SCAN_FILES[@]} 2>/dev/null | \
     grep -vE "^[[:space:]]*(#|//|/\*|\*)" | \
     grep -v "grep.*-rE" | \
     grep -v "WARNING_DETAILS" || true)
 
 # 检查命令历史访问
-HISTORY_ACCESS=$(grep -hE "\.bash_history|\.zsh_history|\.node_repl_history|\.python_history" $SCAN_FILES 2>/dev/null | \
+HISTORY_ACCESS=$(grep -hE "\.bash_history|\.zsh_history|\.node_repl_history|\.python_history" ${SCAN_FILES[@]} 2>/dev/null | \
     grep -vE "^[[:space:]]*(#|//|/\*|\*)" | \
     grep -v "grep.*-rE" || true)
 
 # 检查macOS钥匙串访问
-KEYCHAIN_ACCESS=$(grep -hE "security (find|dump).*keychain|security add-trusted-cert" $SCAN_FILES 2>/dev/null | \
+KEYCHAIN_ACCESS=$(grep -hE "security (find|dump).*keychain|security add-trusted-cert" ${SCAN_FILES[@]} 2>/dev/null | \
     grep -vE "^[[:space:]]*(#|//|/\*|\*)" | \
     grep -v "grep.*-rE" || true)
 
@@ -232,7 +242,7 @@ echo ""
 
 # 6. 检查环境变量
 echo "🌍 检查环境变量使用..."
-ENV_VARS=$(grep -hE "\$[A-Z_]+|process\.env|os\.getenv" $SCAN_FILES 2>/dev/null | head -5 || true)
+ENV_VARS=$(grep -hE "\$[A-Z_]+|process\.env|os\.getenv" ${SCAN_FILES[@]} 2>/dev/null | head -5 || true)
 if [ -n "$ENV_VARS" ]; then
     echo -e "${BLUE}ℹ️  访问环境变量:${NC}"
     echo "$ENV_VARS"
@@ -266,7 +276,7 @@ fi
 echo ""
 
 # 8. 检查危险管道执行
-DANGEROUS_PIPE=$(grep -hE "(curl|wget).*(\|\s*(bash|sh))" $SCAN_FILES 2>/dev/null | \
+DANGEROUS_PIPE=$(grep -hE "(curl|wget).*(\|\s*(bash|sh))" ${SCAN_FILES[@]} 2>/dev/null | \
     grep -vE "^[[:space:]]*(#|//|/\*|\*)" || true)
 if [ -n "$DANGEROUS_PIPE" ]; then
     echo -e "${YELLOW}⚠️  发现危险管道执行:${NC}"
@@ -280,7 +290,7 @@ fi
 echo ""
 
 # 9. 检查一行执行（node -e / python -c / bash -c）
-ONE_LINERS=$(grep -hE "\b(node -e|python -c|bash -c)\b" $SCAN_FILES 2>/dev/null | \
+ONE_LINERS=$(grep -hE "\b(node -e|python -c|bash -c)\b" ${SCAN_FILES[@]} 2>/dev/null | \
     grep -vE "^[[:space:]]*(#|//|/\*|\*)" || true)
 if [ -n "$ONE_LINERS" ]; then
     echo -e "${YELLOW}⚠️  发现一行执行:${NC}"
@@ -315,7 +325,7 @@ echo ""
 
 # 11. 检查持久化机制
 echo "⏰ 检查持久化机制..."
-PERSISTENCE=$(grep -hE "crontab|launchctl load|LaunchAgent|LaunchDaemon|/etc/periodic|login.*hook|\.bashrc|\.zshrc|\.profile" $SCAN_FILES 2>/dev/null | \
+PERSISTENCE=$(grep -hE "crontab|launchctl load|LaunchAgent|LaunchDaemon|/etc/periodic|login.*hook|\.bashrc|\.zshrc|\.profile" ${SCAN_FILES[@]} 2>/dev/null | \
     grep -vE "^[[:space:]]*(#|//|/\*|\*)" | \
     grep -v "grep.*-rE" | \
     grep -v "example" | \
@@ -342,7 +352,7 @@ echo ""
 
 # 12. 检查网络劫持和中间人攻击
 echo "🌐 检查网络劫持风险..."
-NETWORK_HIJACK=$(grep -hE "/etc/hosts|hosts.*127\.0\.0\.1|mitmproxy|charles.*proxy" $SCAN_FILES 2>/dev/null | \
+NETWORK_HIJACK=$(grep -hE "/etc/hosts|hosts.*127\.0\.0\.1|mitmproxy|charles.*proxy" ${SCAN_FILES[@]} 2>/dev/null | \
     grep -vE "^[[:space:]]*(#|//|/\*|\*)" | \
     grep -v "grep.*-rE" || true)
 
@@ -359,7 +369,7 @@ echo ""
 
 # 13. 检查混淆和反检测
 echo "🎭 检查代码混淆和反检测..."
-OBFUSCATION=$(grep -hE "base64 -d.*bash|eval.*\$\(curl|eval.*\$\(wget|sleep [0-9]{4,}" $SCAN_FILES 2>/dev/null | \
+OBFUSCATION=$(grep -hE "base64 -d.*bash|eval.*\$\(curl|eval.*\$\(wget|sleep [0-9]{4,}" ${SCAN_FILES[@]} 2>/dev/null | \
     grep -vE "^[[:space:]]*(#|//|/\*|\*)" | \
     grep -v "grep.*-rE" || true)
 

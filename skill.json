@@ -1,7 +1,7 @@
 {
   "name": "security-auditor",
   "description": "OpenClaw 安全审计工具 - 审计任何代码/脚本/项目的安全性，基于来源信任级别智能检测",
-  "version": "2.0.0",
+  "version": "2.0.2",
   "trigger": "security",
   "commands": [
     {
